@@ -14,16 +14,6 @@ def _canonical_json(obj: dict[str, Any]) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"))
 
 
-def _truncated_sha256(data: str, length: int = 16) -> str:
-    """Return truncated SHA-256 hex digest."""
-    return hashlib.sha256(data.encode("utf-8")).hexdigest()[:length]
-
-
-def _full_sha256(data: str) -> str:
-    """Return full SHA-256 hex digest."""
-    return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
-
 class AuditLogger:
     """
     Tamper-evident audit logger that chains records via cryptographic hashes.
@@ -35,6 +25,16 @@ class AuditLogger:
         self._operator_id = operator_id
         self._chain_hash = INITIAL_CHAIN_HASH
         self._sequence = 0
+
+    def _hash_result(self, result: Any) -> str:
+        """Return truncated SHA-256 hex digest of canonical JSON serialization of result."""
+        data = _canonical_json({"result": result})
+        return hashlib.sha256(data.encode("utf-8")).hexdigest()[:16]
+
+    def _hash_record(self, record: dict[str, Any]) -> str:
+        """Return full SHA-256 hex digest of canonical JSON serialization of record."""
+        data = _canonical_json(record)
+        return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
     def log_event(
         self,
@@ -58,9 +58,7 @@ class AuditLogger:
         self._sequence += 1
         timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
-        result_str = _canonical_json({"result": result})
-        result_hash = _truncated_sha256(result_str)
-
+        result_hash = self._hash_result(result)
         record: dict[str, Any] = {
             "schema_version": SCHEMA_VERSION,
             "engagement_id": self._engagement_id,
@@ -74,8 +72,7 @@ class AuditLogger:
             "prev_chain_hash": self._chain_hash,
         }
 
-        chain_data = _canonical_json(record)
-        chain_hash = _full_sha256(chain_data)
+        chain_hash = self._hash_record(record)
         record["chain_hash"] = chain_hash
 
         self._chain_hash = chain_hash
@@ -93,14 +90,14 @@ class AuditLogger:
             True if chain is valid, False if tampering detected
         """
         prev_hash = INITIAL_CHAIN_HASH
-        for i, rec in enumerate(records):
+        for rec in records:
             if "chain_hash" not in rec or "prev_chain_hash" not in rec:
                 return False
             if rec["prev_chain_hash"] != prev_hash:
                 return False
             rec_copy = {k: v for k, v in rec.items() if k != "chain_hash"}
             chain_data = _canonical_json(rec_copy)
-            expected = _full_sha256(chain_data)
+            expected = hashlib.sha256(chain_data.encode("utf-8")).hexdigest()
             if rec["chain_hash"] != expected:
                 return False
             prev_hash = rec["chain_hash"]

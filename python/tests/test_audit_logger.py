@@ -86,6 +86,16 @@ def test_tamper_detection_reordered_records() -> None:
     assert AuditLogger.verify_chain([r2, r1]) is False
 
 
+def test_result_hashing_deterministic() -> None:
+    """Result hashing is deterministic for the same payload."""
+    logger = AuditLogger(engagement_id="eng-001", operator_id="op-alice")
+    payload = {"hosts": 5, "open_ports": [22, 443]}
+    r1 = logger.log_event("action", payload, "auth")
+    logger2 = AuditLogger(engagement_id="eng-001", operator_id="op-alice")
+    r2 = logger2.log_event("action", payload, "auth")
+    assert r1["result_hash"] == r2["result_hash"]
+
+
 def test_record_structure() -> None:
     """Logged records have expected schema."""
     logger = AuditLogger(engagement_id="eng-001", operator_id="op-alice")

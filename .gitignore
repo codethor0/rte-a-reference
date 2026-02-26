@@ -38,7 +38,6 @@ venv/
 *.tfstate
 *.tfstate.*
 *.tfvars
-.terraform.lock.hcl
 crash.log
 override.tf
 override.tf.json

@@ -1,12 +1,11 @@
-module "rte_a_simple" {
+module "rte_a_infra" {
   source = "../../rte_a_infra"
 
-  engagement_id     = "eng-simple-example"
-  expiration_rfc3339 = "2026-03-01T23:59:59Z"
-  operator_email    = "operator@example.com"
-  aws_region        = "us-east-1"
+  engagement_id      = "example-engagement"
+  expiration_rfc3339 = "2030-01-01T00:00:00Z"
+  operator_email     = "operator@example.com"
 }
 
-output "instance_id" {
-  value = module.rte_a_simple.instance_id
+output "simulation_node_id" {
+  value = module.rte_a_infra.simulation_node_id
 }

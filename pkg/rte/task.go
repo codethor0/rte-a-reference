@@ -13,24 +13,21 @@ import (
 type TaskType string
 
 const (
-	TaskTypeRecon      TaskType = "recon"
-	TaskTypeAccess     TaskType = "access"
-	TaskTypeExfil      TaskType = "exfil"
-	TaskTypePersistence TaskType = "persistence"
-	TaskTypeLateral    TaskType = "lateral"
-	TaskTypeDiscovery TaskType = "discovery"
+	TaskSimulateLogin  TaskType = "simulate_login"
+	TaskSimulateBeacon TaskType = "simulate_beacon"
+	TaskInventory     TaskType = "inventory"
+	TaskEmitSynthetic  TaskType = "emit_synthetic"
 )
 
 // TaskState represents the lifecycle state of a task.
 type TaskState string
 
 const (
-	TaskStatePending   TaskState = "pending"
-	TaskStateApproved  TaskState = "approved"
-	TaskStateRunning   TaskState = "running"
-	TaskStateCompleted TaskState = "completed"
-	TaskStateFailed    TaskState = "failed"
-	TaskStateCancelled TaskState = "cancelled"
+	StatePending    TaskState = "pending"
+	StateExecuting  TaskState = "executing"
+	StateCancelled  TaskState = "cancelled"
+	StateCompleted  TaskState = "completed"
+	StateFailed     TaskState = "failed"
 )
 
 const (
@@ -40,21 +37,18 @@ const (
 
 var (
 	allowedTaskTypes = map[TaskType]struct{}{
-		TaskTypeRecon:       {},
-		TaskTypeAccess:     {},
-		TaskTypeExfil:      {},
-		TaskTypePersistence: {},
-		TaskTypeLateral:    {},
-		TaskTypeDiscovery:  {},
+		TaskSimulateLogin:  {},
+		TaskSimulateBeacon: {},
+		TaskInventory:     {},
+		TaskEmitSynthetic: {},
 	}
 
 	validTaskStates = map[TaskState]struct{}{
-		TaskStatePending:   {},
-		TaskStateApproved:  {},
-		TaskStateRunning:   {},
-		TaskStateCompleted: {},
-		TaskStateFailed:    {},
-		TaskStateCancelled: {},
+		StatePending:   {},
+		StateExecuting: {},
+		StateCancelled: {},
+		StateCompleted: {},
+		StateFailed:    {},
 	}
 )
 

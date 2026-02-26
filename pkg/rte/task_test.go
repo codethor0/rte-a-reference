@@ -11,12 +11,12 @@ func validTask(t time.Time) Task {
 	return Task{
 		ID:         "task-001",
 		Engagement: "eng-2026-q1",
-		Type:       TaskTypeRecon,
+		Type:       TaskSimulateLogin,
 		CreatedAt:  t,
 		TTLSeconds: 600,
 		Operator:   "op-alice",
 		ApprovedBy: "lead-bob",
-		State:      TaskStateApproved,
+		State:      StatePending,
 		Params:     map[string]string{"target": "192.168.1.0/24"},
 	}
 }

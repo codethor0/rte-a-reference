@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  go:
+  go-tests:
     name: Go
     runs-on: ubuntu-latest
     steps:
@@ -21,7 +21,7 @@ jobs:
       - name: Run tests
         run: go test ./...
 
-  python:
+  python-tests:
     name: Python
     runs-on: ubuntu-latest
     steps:
@@ -30,19 +30,19 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.10"
 
       - name: Install package and pytest
         run: |
           cd python
-          pip install -e . pytest
+          pip install -e ".[dev]" || pip install -e . pytest
 
       - name: Run tests
         run: |
           cd python
           pytest
 
-  terraform:
+  terraform-validate:
     name: Terraform
     runs-on: ubuntu-latest
     steps:
@@ -55,14 +55,12 @@ jobs:
 
       - name: Terraform fmt and validate (module)
         run: |
-          cd terraform/rte_a_infra
-          terraform fmt -check -recursive
-          terraform init -backend=false -input=false
-          terraform validate
+          terraform -chdir=terraform/rte_a_infra fmt -check
+          terraform -chdir=terraform/rte_a_infra init -backend=false -input=false
+          terraform -chdir=terraform/rte_a_infra validate
 
       - name: Terraform fmt and validate (example)
         run: |
-          cd terraform/examples/simple
-          terraform fmt -check -recursive
-          terraform init -backend=false -input=false
-          terraform validate
+          terraform -chdir=terraform/examples/simple fmt -check
+          terraform -chdir=terraform/examples/simple init -backend=false -input=false
+          terraform -chdir=terraform/examples/simple validate

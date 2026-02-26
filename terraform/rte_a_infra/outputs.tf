@@ -3,6 +3,11 @@ output "instance_id" {
   value       = aws_instance.rte_a_ephemeral.id
 }
 
+output "simulation_node_id" {
+  description = "ID of the simulation node (ephemeral instance)"
+  value       = aws_instance.rte_a_ephemeral.id
+}
+
 output "instance_arn" {
   description = "ARN of the ephemeral EC2 instance"
   value       = aws_instance.rte_a_ephemeral.arn

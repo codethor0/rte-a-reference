@@ -1,89 +1,75 @@
-# Red Team Engineering Algorithm (RTE-A) Reference Implementation
+# Red Team Engineering Algorithm (RTE-A) - Reference Implementation
 
-[![CI](https://img.shields.io/badge/CI-github%20actions-blue)](https://github.com/codethor0/rte-a-reference/actions)
+[![CI](https://github.com/codethor0/rte-a-reference/actions/workflows/ci.yml/badge.svg)](https://github.com/codethor0/rte-a-reference/actions/workflows/ci.yml)
 [![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go)](https://golang.org/)
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python)](https://python.org/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python)](https://python.org/)
+[![License](https://img.shields.io/badge/License-TBD-lightgrey)](NOTICE.md)
 
-RTE-A treats red team operations as a systems algorithm for governed adversary simulation, with typed tasking, cryptographic attribution, tamper-evident audit logging, and ephemeral infrastructure.
+Reference implementation of the Red Team Engineering Algorithm (RTE-A): typed tasking with cryptographic attribution (Go), tamper-evident audit logging (Python), and ephemeral, TTL-enforced infrastructure (Terraform) for governed adversary simulation.
 
-## Architecture Overview
-
-### RTE-A Requirements (R1-R6)
-
-| Req | Name | Description |
-|-----|------|-------------|
-| R1 | Attribution | Every action attributable to an authenticated operator and approved task |
-| R2 | Policy Compliance | Each task stays within scope and rules of engagement |
-| R3 | Observability | Execution produces structured, verifiable evidence for audit |
-| R4 | Lifecycle Safety | Infrastructure discoverable and destructible, TTL enforced |
-| R5 | Multi-operator | Multiple operators, no shared accounts, clear separation |
-| R6 | Defender-Aligned | Outputs are measurements and recommendations in defender language |
-
-### Layers (L1-L6)
-
-- **L1 Identity**: Operator authentication and authorization
-- **L2 Tasking**: Typed tasks with cryptographic attestation (Go library)
-- **L3 Transport**: Task delivery and result collection
-- **L4 Execution**: Task execution engines
-- **L5 Infrastructure**: Ephemeral, tagged, TTL-enforced resources (Terraform)
-- **L6 Observability**: Audit trail and measurements (Python library)
-
-### Data Flow
+## Repository Layout
 
 ```
-Defender Objective
-       |
-       v
-Control Plane (Task Approval, Signing)
-       |
-       v
-Data Plane (Task Execution)
-       |
-       v
-Infrastructure (Ephemeral EC2, Tags)
-       |
-       v
-Audit Trail and Measurements (Hash-Chained Logs)
+rte-a-reference/
+|-- .editorconfig
+|-- .gitignore
+|-- .github/
+|   |-- workflows/
+|   |   |-- ci.yml
+|-- NOTICE.md
+|-- README.md
+|-- go.mod
+|-- pkg/
+|   |-- rte/
+|   |   |-- task.go
+|   |   |-- task_test.go
+|-- python/
+|   |-- pyproject.toml
+|   |-- rte_a_audit/
+|   |   |-- __init__.py
+|   |   |-- audit_logger.py
+|   |   |-- py.typed
+|   |-- tests/
+|   |   |-- test_audit_logger.py
+|-- scripts/
+|   |-- dev_check.sh
+|-- terraform/
+|   |-- rte_a_infra/
+|   |   |-- main.tf
+|   |   |-- outputs.tf
+|   |   |-- variables.tf
+|   |-- examples/
+|   |   |-- simple/
+|   |       |-- main.tf
 ```
 
-## Components
+## Getting Started
 
-### Go Typed Tasking Library (`pkg/rte`)
+### Requirements
 
-Implements R1 (Attribution) and R2 (Policy Compliance):
+- Go 1.22+
+- Python 3.10+
+- Terraform 1.6+
 
-- `Task` and `SignedTask` structs with ed25519 signatures
-- `SignTask`, `VerifyTask` for cryptographic attestation
-- `Task.Validate()` enforces TTL, allowed types, and required fields
-
-### Python Audit Logger (`python/rte_a_audit`)
-
-Implements R3 (Observability):
-
-- `AuditLogger` with hash-chained records
-- Tamper-evident: `verify_chain()` detects modifications or removals
-- Structured output for detection engineering and threat hunting
-
-### Terraform Infrastructure Module (`terraform/rte_a_infra`)
-
-Implements R4 (Lifecycle Safety):
-
-- Ephemeral EC2 (t3.micro) with mandatory tags
-- `ExpiresAfter`, `AutoTeardown`, `Owner`, `Engagement`
-- CloudWatch event rule stub for TTL enforcement
-
-## Quickstart
-
-### Go
-
-Requires Go 1.22 or later.
+### Clone
 
 ```bash
+git clone https://github.com/codethor0/rte-a-reference.git
 cd rte-a-reference
-go test ./...
 ```
 
-Example usage:
+### Run All Checks
+
+```bash
+chmod +x scripts/dev_check.sh
+./scripts/dev_check.sh
+```
+
+This runs: `go test ./...`, `pytest` in `python/`, and `terraform fmt -check` plus `terraform validate` in both the module and example directories.
+
+## Go Module Usage
+
+Create, sign, and verify a typed task:
 
 ```go
 package main
@@ -99,12 +85,12 @@ func main() {
     task := rte.Task{
         ID:         "task-001",
         Engagement: "eng-2026",
-        Type:       rte.TaskTypeRecon,
+        Type:       rte.TaskSimulateLogin,
         CreatedAt:  now,
         TTLSeconds: 600,
         Operator:   "op-alice",
         ApprovedBy: "lead-bob",
-        State:      rte.TaskStateApproved,
+        State:      rte.StatePending,
     }
     pub, priv, _ := rte.GenerateKeyPair()
     st, err := rte.SignTask(task, priv, pub)
@@ -118,17 +104,7 @@ func main() {
 }
 ```
 
-### Python
-
-Requires Python 3.10+.
-
-```bash
-cd python
-pip install -e .
-pytest
-```
-
-Example usage:
+## Python Audit Logger Usage
 
 ```python
 from rte_a_audit import AuditLogger
@@ -146,33 +122,23 @@ records = [rec]
 assert AuditLogger.verify_chain(records)
 ```
 
-### Terraform
+## Terraform Usage
 
-Requires Terraform 1.6+ and AWS credentials.
+From `terraform/examples/simple`:
 
 ```bash
-cd terraform/examples/simple
 terraform init
 terraform plan
-terraform apply   # creates ephemeral EC2 with tags
-terraform destroy
+terraform apply
 ```
 
-## Testing and CI
+This provisions ephemeral EC2 infrastructure with engagement tags and TTL metadata. Run `terraform destroy` when done.
 
-Run all checks from the repo root:
+## Security Considerations
 
-```bash
-./scripts/dev_check.sh
-```
-
-This runs:
-
-- `go test ./...`
-- `cd python && pytest`
-- `terraform fmt -check` and `terraform validate` in `terraform/rte_a_infra` and `terraform/examples/simple`
-
-The GitHub Actions workflow (`.github/workflows/ci.yml`) runs the same checks on push and pull requests to `main`.
+- No secrets or credentials are stored in this repository
+- Sample values (emails, engagement IDs) are for demonstration only
+- Production use requires proper credential management and least-privilege IAM
 
 ## License
 

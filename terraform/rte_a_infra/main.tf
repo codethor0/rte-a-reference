@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.6.0"
+  required_version = ">= 1.5.0"
 
   required_providers {
     aws = {
@@ -15,14 +15,14 @@ provider "aws" {
 
 locals {
   common_tags = {
-    Owner         = var.operator_email
-    Engagement    = var.engagement_id
-    ExpiresAfter  = var.expiration_rfc3339
-    AutoTeardown  = "true"
-    CostCenter    = "rte-a"
-    CreatedBy     = var.operator_email
-    Purpose       = "rte-a-ephemeral"
-    Layer         = "L5-infrastructure"
+    Owner        = var.operator_email
+    Engagement   = var.engagement_id
+    ExpiresAfter = var.expiration_rfc3339
+    AutoTeardown = "true"
+    CostCenter   = "rte-a"
+    CreatedBy    = var.operator_email
+    Purpose      = "rte-a-ephemeral"
+    Layer        = "L5-infrastructure"
   }
 }
 
