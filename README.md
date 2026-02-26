@@ -12,18 +12,21 @@ Reference implementation of the Red Team Engineering Algorithm (RTE-A): typed ta
 ```
 rte-a-reference/
 |-- .editorconfig
+|-- .golangci.yml
 |-- .gitignore
 |-- .github/
 |   |-- workflows/
 |   |   |-- ci.yml
 |-- NOTICE.md
 |-- README.md
+|-- SECURITY.md
 |-- go.mod
 |-- pkg/
 |   |-- rte/
 |   |   |-- task.go
 |   |   |-- task_test.go
 |-- python/
+|   |-- mypy.ini
 |   |-- pyproject.toml
 |   |-- rte_a_audit/
 |   |   |-- __init__.py
@@ -133,6 +136,20 @@ terraform apply
 ```
 
 This provisions ephemeral EC2 infrastructure with engagement tags and TTL metadata. Run `terraform destroy` when done.
+
+## Design Guarantees
+
+This reference maps to RTE-A requirements as follows:
+
+| Component | Requirements | Guarantee |
+|-----------|--------------|-----------|
+| Go typed tasking | R1, R2, R5 | Every task has Operator and ApprovedBy; Validate enforces type and TTL; SignTask/VerifyTask bind action to cryptographic identity; no shared accounts |
+| Python audit logger | R1, R3 | Records include operator_id and authorization; hash chain provides tamper-evident, verifiable audit trail for detection engineering |
+| Terraform module | R4 | Ephemeral EC2 tagged with ExpiresAfter, AutoTeardown, Engagement; infrastructure is discoverable and destructible via tags |
+
+## Defender Outputs (R6)
+
+Audit records from the Python logger are structured for defender consumption: action, result_hash, authorization, and sequence form a chain that threat hunters and detection engineers can verify. Terraform tags (Engagement, ExpiresAfter, Owner) make infrastructure traceable to engagements and operators, supporting measurement and recommendation generation in defender language rather than raw "access achieved" outputs.
 
 ## Security Considerations
 

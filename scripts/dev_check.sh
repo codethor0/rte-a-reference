@@ -8,6 +8,7 @@ REPO_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 echo "Running Go tests..."
 cd "$REPO_ROOT"
 go test ./...
+golangci-lint run --config .golangci.yml
 
 echo "Running Python tests..."
 cd "$REPO_ROOT/python"
@@ -17,6 +18,7 @@ fi
 . .venv/bin/activate
 pip install -e ".[dev]" >/dev/null 2>&1 || pip install -e .
 pytest
+mypy rte_a_audit
 
 echo "Running Terraform checks..."
 cd "$REPO_ROOT"
